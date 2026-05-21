@@ -644,7 +644,7 @@
 <!-- ══════════════════ SCRIPT ══════════════════ -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
   import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, orderBy, query }
     from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
@@ -671,6 +671,9 @@
 
   let myBooks = [], myReadlist = [], currentBook = null, currentRating = 0, currentUser = null;
   let unsubBooks = null, unsubRead = null;
+
+  // Récupère le résultat de la redirection Google (connexion mobile)
+  getRedirectResult(auth).catch(() => {});
   const $ = id => document.getElementById(id);
   const bookModalOverlay = $('bookModalOverlay');
   const authorModalOverlay = $('authorModalOverlay');
@@ -680,7 +683,7 @@
 
   // ══════════════════════════ AUTH ══════════════════════════
   $('btnGoogleLogin').addEventListener('click', async () => {
-    try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+    try { await signInWithRedirect(auth, new GoogleAuthProvider()); }
     catch { showToast('Erreur de connexion'); }
   });
 
