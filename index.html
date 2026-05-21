@@ -644,7 +644,7 @@
 <!-- ══════════════════ SCRIPT ══════════════════ -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
   import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, orderBy, query }
     from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
@@ -683,8 +683,23 @@
 
   // ══════════════════════════ AUTH ══════════════════════════
   $('btnGoogleLogin').addEventListener('click', async () => {
-    try { await signInWithRedirect(auth, new GoogleAuthProvider()); }
-    catch { showToast('Erreur de connexion'); }
+    try {
+      // Popup d'abord (desktop/navigateurs compatibles)
+      // Redirection en fallback (mobile strict)
+      const provider = new GoogleAuthProvider();
+      try {
+        await signInWithPopup(auth, provider);
+      } catch(popupErr) {
+        // Si popup bloqué, on bascule sur redirection
+        if (popupErr.code === 'auth/popup-blocked' ||
+            popupErr.code === 'auth/popup-closed-by-user' ||
+            popupErr.code === 'auth/cancelled-popup-request') {
+          await signInWithRedirect(auth, provider);
+        } else {
+          throw popupErr;
+        }
+      }
+    } catch { showToast('Erreur de connexion'); }
   });
 
   $('btnLogout').addEventListener('click', async () => {
